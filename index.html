@@ -433,7 +433,7 @@ b.onclick=()=>{u.f(st);(st.pk=st.pk||{})[u.n]=(st.pk[u.n]||0)+1;pend--;if(pend>0
 /* ===== 選單系統：主介面 / 圖鑑 / 靈氣坊 / 難度 ===== */
 const $=id=>document.getElementById(id);
 let MENU=1,ctab=0,stab=0,smsg='';
-const SK=()=>BEST.sk|0,FXK=()=>BEST.fx|0;
+const FXK=()=>BEST.fx|0;
 function scr(m){MENU=m;$('h').style.display=m?'none':'';ov.className=m?'mm'+(m>1?' sb':''):''}
 function show(sub){$('pb').style.display=$('ub').style.display='none';ov.style.display='flex';ov.innerHTML='';ov.scrollTop=0;scr(sub?2:1)}
 function box(tag,cls,html,par){const e=document.createElement(tag);if(cls)e.className=cls;if(html!=null)e.innerHTML=html;(par||ov).appendChild(e);return e}
@@ -444,23 +444,14 @@ function icon(src,sz,lk){const k=document.createElement('canvas');k.width=k.heig
 function bank(){const s=st;if(!s||s.bnk)return;s.bnk=1;s.qg=Math.floor(s.qi*DF_[DF].qm);BEST.qi=(BEST.qi||0)+s.qg;sv()}
 addEventListener('pagehide',e=>{if(!e.persisted&&st&&!over)bank()});
 
-/* ---- 異獸造型（以像素色相變換套用到任何異獸）---- */
-const SKINS=[
-{n:'原貌',c:0,d:'異獸本來的面貌'},
-{n:'青丘碧',c:60,h:.31,d:'青丘靈木之色'},
-{n:'赤霄',c:60,h:-.14,d:'赤霞燒天'},
-{n:'幽冥紫',c:90,h:.66,d:'幽都冥火之色'},
-{n:'金身',c:160,gold:1,d:'祥瑞金光加身'},
-{n:'玉雪',c:160,jade:1,d:'崑崙玉山之潔'},
-{n:'墨影',c:220,ink:1,d:'隱於夜色的幽影'}];
-function r2h(r,g_,b){r/=255;g_/=255;b/=255;const mx=Math.max(r,g_,b),mn=Math.min(r,g_,b),l=(mx+mn)/2;let h=0,s=0;if(mx!=mn){const d=mx-mn;s=l>.5?d/(2-mx-mn):d/(mx+mn);h=mx==r?(g_-b)/d+(g_<b?6:0):mx==g_?(b-r)/d+2:(r-g_)/d+4;h/=6}return[h,s,l]}
-function h2r(h,s,l){const f=(p,q,t)=>{t=(t%1+1)%1;return t<1/6?p+(q-p)*6*t:t<.5?q:t<2/3?p+(q-p)*(2/3-t)*6:p};if(!s)return[l*255,l*255,l*255];const q=l<.5?l*(1+s):l+s-l*s,p=2*l-q;return[f(p,q,h+1/3)*255,f(p,q,h)*255,f(p,q,h-1/3)*255]}
-function skinCv(src,k){const o=SKINS[k];if(!o||!k)return src;const c=document.createElement('canvas');c.width=c.height=20;c.rows=src.rows;const x=c.getContext('2d');x.drawImage(src,0,0);const im=x.getImageData(0,0,20,20),d=im.data;
-for(let i=0;i<d.length;i+=4){if(d[i+3]<10)continue;const r=d[i],gg=d[i+1],b=d[i+2];if(r<44&&gg<44&&b<44)continue;let[h,s,l]=r2h(r,gg,b);
-if(o.h!=null){h+=o.h;s=Math.min(1,s*1.05)}else if(o.gold){h=.12;s=.8;l=.28+l*.55}else if(o.jade){h=.44;s=.42;l=.42+l*.5}else if(o.ink){h=.72;s=.12;l=.08+l*.5}
-const q=h2r(h,s,Math.min(1,l));d[i]=q[0];d[i+1]=q[1];d[i+2]=q[2]}
-x.putImageData(im,0,0);return c}
-const SKC={};function pspr(i,k){const q=i+'_'+k;return SKC[q]||(SKC[q]=skinCv(CH[i].s,k))}
+/* ---- 異獸專屬造型（疊加外觀件，非變色）---- */
+const EXP={"a": "#ffd84a", "c": "#fff6c0", "d": "#c8902a", "e": "#ff4a2a", "h": "#ffa030", "i": "#8ae8ff", "j": "#3a78d0", "l": "#b0f060", "m": "#e860a8", "o": "#ffffff", "q": "#a070ff", "s": "#c8d0e0", "t": "#5a6a80", "u": "#3a2060", "v": "#38c068", "x": "#18284a", "z": "#ffe8a0", "F": "#ff7a1a", "I": "#d8f8ff", "J": "#8a5a2a", "P": "#ff9ac0"};
+const PARTS={"crown": {"0": "....a..a", "1": "....aaae"}, "halo": {"0": "...ccccc", "1": "..c....."}, "horn": {"0": "...a....", "1": "...aa..."}, "flameh": {"0": "...e.h.e", "1": "...ehhhe"}, "flower": {"0": "...mPmPm", "1": "...PmPmP"}, "helm": {"0": "....tsse", "1": "...tssss"}, "antler": {"0": ".l..l..l", "1": ".ll.ll.l"}, "ice": {"0": "...i.i.I", "1": "...iIIII"}, "star": {"0": ".....o.o", "1": "....oioi"}, "hat": {"0": "....tttt", "1": "..tttttt"}, "armor": {"8": "..ttssss", "9": "..tssIII", "10": "..tsaaIs", "11": "..tssIII", "12": "..ttssss"}, "scarf": {"7": "..eeeeee", "8": "...e...."}, "rune": {"8": ".......a", "9": "......ac", "10": ".......a"}, "neck": {"7": "..a.a.aa", "8": "....a.aa"}, "spots": {"8": "..q.q...", "10": "...q.q.q"}, "cloud": {"13": ".ssssooo", "14": "ssoooooo", "15": ".ssooooo"}, "flamef": {"13": "..e.h.eh", "14": ".hehehee", "15": ".eheheeh"}, "water": {"14": ".jijijij", "15": "..ijijij"}, "lotus": {"14": "..mPmPmP", "15": ".mmPmPPP"}, "orbs": {"4": "c.......", "8": "a.......", "12": "c......."}, "wings": {"2": "cc......", "3": "coc.....", "4": "cooc....", "5": "cooc....", "6": "cooc....", "7": "coc.....", "8": "cc......", "9": "c......."}, "tails": {"7": "oo......", "8": "ozz.....", "9": "ozzz....", "10": "ozzz....", "11": "ozzz....", "12": "ozz.....", "13": "oo......"}, "fireA": {"4": "e.......", "5": "he......", "6": "ehe.....", "7": "ehhe....", "8": "ehe.....", "9": "ehe.....", "10": "he......", "11": "e......."}, "iceA": {"4": "i.......", "5": "Ii......", "6": "iIi.....", "7": "iIIi....", "8": "iIi.....", "9": "iIi.....", "10": "Ii......", "11": "i......."}, "leafA": {"4": "v.......", "5": "lv......", "6": "vlv.....", "7": "vllv....", "8": "vlv.....", "9": "vlv.....", "10": "lv......", "11": "v......."}, "thunderA": {"3": ".aa.....", "4": "aa......", "5": ".aa.....", "6": "..aa....", "7": ".aa.....", "8": "aa......", "9": ".a......"}};
+const SKV=[[["青丘仙狐", 80, ["halo", "orbs"]], ["赤焰狐妖", 120, ["flameh", "fireA", "flamef"]], ["月華玉狐", 160, ["star", "neck", "cloud"]], ["九尾天狐", 220, ["crown", "tails", "rune"]], ["雪靈狐", 300, ["ice", "iceA", "scarf"]]], [["離火畢方", 80, ["flameh", "flamef"]], ["青鸞化形", 120, ["halo", "wings"]], ["赤羽戰士", 160, ["helm", "armor", "fireA"]], ["金烏之裔", 220, ["crown", "wings", "orbs"]], ["章莪神鳥", 300, ["star", "cloud", "rune"]]], [["鼎紋饕餮", 80, ["horn", "rune", "spots"]], ["吞天魔君", 120, ["helm", "armor", "fireA"]], ["古銅饕餮", 160, ["antler", "armor", "spots"]], ["赤帝饕餮", 220, ["crown", "horn", "scarf"]], ["渾沌之口", 300, ["flameh", "spots", "flamef"]]], [["豐年當康", 80, ["flower", "neck"]], ["祈穀當康", 120, ["hat", "scarf", "leafA"]], ["金穗當康", 160, ["crown", "orbs", "lotus"]], ["山神當康", 220, ["antler", "armor", "leafA"]], ["祥雲當康", 300, ["halo", "cloud", "rune"]]], [["瑞獸白澤", 80, ["halo", "orbs"]], ["天眼白澤", 120, ["star", "rune", "cloud"]], ["賢者白澤", 160, ["hat", "scarf", "neck"]], ["帝師白澤", 220, ["crown", "wings", "rune"]], ["聖獸白澤", 300, ["antler", "wings", "lotus"]]], [["旱魃肥遺", 80, ["flameh", "fireA", "flamef"]], ["六翼肥遺", 120, ["wings", "spots", "orbs"]], ["雷紋肥遺", 160, ["horn", "thunderA", "spots"]], ["毒瘴肥遺", 220, ["antler", "leafA", "spots"]], ["蓮影肥遺", 300, ["flower", "lotus", "water"]]], [["五尾狰", 80, ["tails", "horn"]], ["赤豹戰狰", 120, ["helm", "armor", "fireA"]], ["擊石狰", 160, ["thunderA", "spots", "horn"]], ["獨角麒麟", 220, ["crown", "horn", "cloud"]], ["炎角狰", 300, ["flameh", "flamef", "wings"]]], [["食月天狗", 80, ["star", "orbs", "scarf"]], ["黑犬天狗", 120, ["horn", "thunderA", "spots"]], ["月狼天狗", 160, ["crown", "iceA", "neck"]], ["疾風天狗", 220, ["wings", "cloud", "scarf"]], ["吞日天狗", 300, ["flameh", "fireA", "flamef"]]], [["玄武之甲", 80, ["armor", "water", "iceA"]], ["水神玄龜", 120, ["ice", "water", "rune"]], ["龜蛇玄龜", 160, ["horn", "thunderA", "spots"]], ["瑞龜", 220, ["crown", "lotus", "halo"]], ["山嶽玄龜", 300, ["antler", "leafA", "armor"]]], [["渾沌帝江", 80, ["halo", "orbs", "rune"]], ["六翼帝江", 120, ["wings", "star", "orbs"]], ["歌舞帝江", 160, ["flower", "scarf", "cloud"]], ["赤火帝江", 220, ["flameh", "fireA", "flamef"]], ["天山神帝", 300, ["crown", "thunderA", "lotus"]]]];
+const SKI=i=>((BEST.sks||{})[i])|0;
+function overlay(rows,parts){const r=rows.map(x=>x.split(''));for(const pn of parts){const Q=PARTS[pn];for(const k in Q){const h=Q[k],y=+k;for(let i=0;i<8;i++){const ch=h[i];if(ch==='.')continue;const v=ch==='_'?'.':ch;r[y][i]=v;r[y][15-i]=v}}}return r.map(x=>x.join(''))}
+const SKC={};function pspr(i,k){if(!k)return CH[i].s;const q=i+'_'+k;return SKC[q]||(SKC[q]=spr(overlay(CH[i].s.rows,SKV[i][k-1][2]),EXP))}
+(function(){const o=BEST.ow;let rf=0;if(o)[0,60,60,90,160,160,220].forEach((c,k)=>{if(k&&o['s'+k]){rf+=c;delete o['s'+k]}});const had=BEST.sk!=null;delete BEST.sk;if(rf)BEST.qi=(BEST.qi||0)+rf;if(rf||had)sv()})();
 
 /* ---- 符咒／攻擊特效顏色 ---- */
 const FXS=[
@@ -533,7 +524,7 @@ const BL=[
 '《莊子・逍遙遊》載北冥有魚名鯤，大到不知有幾千里，化為鳥則名為鵬，展翅如垂天之雲。',
 '《海外北經》載北方之神禺彊，人面鳥身，耳掛兩條青蛇，腳踏兩條紅蛇。他是北海之神，兼掌風。'];
 function cdxList(t){
-if(t==0)return CH.map((c,i)=>({n:c.n,sp:pspr(i,SK()),lore:LB[i],meta:['異獸','生命 '+c.hp,'移速 '+c.sp],ab:c.t,rec:bt(c.n),lock:0}));
+if(t==0)return CH.map((c,i)=>({n:c.n,sp:pspr(i,SKI(i)),lore:LB[i],meta:['異獸','生命 '+c.hp,'移速 '+c.sp],ab:c.t,rec:bt(c.n),lock:0}));
 if(t==1)return MN.map(m=>({n:m[1],sp:T[m[0]].s,lore:m[2],meta:[m[0]>14?'地域妖獸・'+BN[m[0]-15]:'妖獸','血量 '+T[m[0]].hp],lock:!seen(m[0])}));
 return BN2.flatMap((row,b)=>row.map((n,i)=>{const k=24+b*3+i;return{n,sp:T[k].s,lore:BL[b*3+i],meta:['Boss・'+BN[b]+'領主','血量 '+T[k].hp],lock:!seen(k)}}))}
 function cdxCount(){let a=0,b=0;for(let t=0;t<3;t++){const l=cdxList(t);b+=l.length;a+=l.filter(e=>!e.lock).length}return a+' / '+b}
@@ -548,10 +539,10 @@ const own=(id,c)=>!c||!!(BEST.ow&&BEST.ow[id]);
 function buy(id,c,eq){if(own(id,c)){eq();sfx('ui');smsg=''}else if((BEST.qi||0)>=c){BEST.qi-=c;(BEST.ow=BEST.ow||{})[id]=1;eq();sfx('buy');smsg=''}else{sfx('no');smsg='靈氣不足，還差 '+(c-(BEST.qi||0))+' 點'}sv();shop()}
 function shop(){show(1);box('h2',0,'靈氣坊');box('div','qibar','持有靈氣 <span class="qi">✦ '+(BEST.qi||0)+'</span>');
 const tb=box('div','row tabs');['異獸造型','符咒特效'].forEach((n,i)=>mkb(n,()=>{stab=i;smsg='';shop()},i==stab?'on':'',0,tb));
-if(smsg)box('p','bad',smsg);else box('p','mini',stab?'點擊已擁有的特效即可裝備，會套用在符咒、火焰與衝擊波上。':'點擊已擁有的造型即可裝備，所有異獸通用。靈氣於每局結算時存入。');
-if(stab==0){const pr=box('div','row');mkb('◀',()=>{cur=(cur+9)%10;shop()},'',0,pr);box('span','','預覽：<b>'+CH[cur].n+'</b>',pr).style.cssText='align-self:center;min-width:96px';mkb('▶',()=>{cur=(cur+1)%10;shop()},'',0,pr)}
+if(smsg)box('p','bad',smsg);else box('p','mini',stab?'點擊已擁有的特效即可裝備，會套用在符咒、火焰與衝擊波上。':'每隻異獸各有 5 套專屬造型，用 ◀ ▶ 切換異獸。點擊已擁有的造型即可裝備。');
+if(stab==0){const pr=box('div','row');mkb('◀',()=>{cur=(cur+9)%10;shop()},'',0,pr);box('span','','異獸：<b>'+CH[cur].n+'</b>',pr).style.cssText='align-self:center;min-width:96px';mkb('▶',()=>{cur=(cur+1)%10;shop()},'',0,pr)}
 const gd=box('div','grid');
-if(stab==0)SKINS.forEach((o,k)=>{const id='s'+k,eq=SK()==k,ow=own(id,o.c);const b=mkb(o.n,()=>buy(id,o.c,()=>{BEST.sk=k}),eq?'sel':ow?'':'lk',eq?'✔ 已裝備':ow?'點擊裝備':'✦ '+o.c+' 解鎖',gd);b.title=o.d;b.prepend(icon(pspr(cur,k)))});
+if(stab==0)[['原貌',0]].concat(SKV[cur].map(o=>[o[0],o[1]])).forEach((o,k)=>{const id='k'+cur+'_'+k,eq=SKI(cur)==k,ow=own(id,o[1]);const b=mkb(o[0],()=>buy(id,o[1],()=>{(BEST.sks=BEST.sks||{})[cur]=k}),eq?'sel':ow?'':'lk',eq?'✔ 已裝備':ow?'點擊裝備':'✦ '+o[1]+' 解鎖',gd);b.prepend(icon(pspr(cur,k)))});
 else FXS.forEach((o,k)=>{const id='f'+k,eq=FXK()==k,ow=own(id,o.c);const b=mkb(o.n,()=>buy(id,o.c,()=>{BEST.fx=k}),eq?'sel':ow?'':'lk',eq?'✔ 已裝備':ow?'點擊裝備':'✦ '+o.c+' 解鎖',gd);b.title=o.d;b.prepend(fxIcon(k))});
 mkb('返回主選單',title,'mb')}
 
@@ -561,7 +552,7 @@ function diff(){show(1);box('h2',0,'難度選擇');DF_.forEach((d,i)=>mkb(d.n+(i
 function pick(){show(1);box('h2',0,'選擇異獸');box('p','mini','難度：<b>'+DF_[DF].n+'</b>（敵人血量×'+DF_[DF].hp+'、受到傷害×'+DF_[DF].dm+'、經驗×'+DF_[DF].xp+'、靈氣×'+DF_[DF].qm+'）');
 const dr=box('div','row');DF_.forEach((d,i)=>mkb(d.n,()=>{DF=i;BEST.df=i;sv();pick()},i==DF?'on':'',0,dr));
 const gd=box('div','grid');gd.style.gridTemplateColumns='repeat(auto-fit,minmax(150px,1fr))';gd.style.width='min(660px,100%)';
-CH.forEach((c,i)=>{const b=mkb(c.n,()=>{cur=i;start()},'',c.t+'<br>HP '+c.hp+'　'+bt(c.n),gd);b.prepend(icon(pspr(i,SK()),48))});
+CH.forEach((c,i)=>{const b=mkb(c.n,()=>{cur=i;start()},'',c.t+'<br>HP '+c.hp+'　'+bt(c.n),gd);b.prepend(icon(pspr(i,SKI(i)),48))});
 mkb('返回主選單',title,'mb')}
 
 /* ---- 主介面 ---- */
@@ -584,7 +575,7 @@ const mx=W*.78,my=H*.2,mr=Math.max(8,H*.07);g.fillStyle='rgba(244,236,208,.12)';
 const L=[['#1d2c44',.55,.9,.006,1],['#15243a',.66,1.1,.011,4],['#0c1626',.76,1.3,.02,8]];
 for(const[c,bs,am,sp,sd]of L){g.fillStyle=c;for(let x=0;x<W;x++){const u=x+t*sp*400,y=H*bs-(Math.sin(u*.03+sd)+Math.sin(u*.071+sd*2)*.55+Math.sin(u*.015+sd*3)*.9+1.6)*H*.055*am;g.fillRect(x,y|0,1,H)}}
 const gy=H*.84|0;g.fillStyle='#1c3424';g.fillRect(0,gy,W,H);g.fillStyle='#2c5a38';for(let x=0;x<W;x+=3)g.fillRect(x,gy+((x>>2)&1),2,1);
-for(let r=0;r<3;r++)for(let i=r;i<10;i+=3){const v=9+(i%4)*4,x=((t*v+i*61)%(W+50))-25,y=Math.round(H*.88+r*5);ds(pspr(i,SK()),x,y,CH[i].z||20,1,t*8+i,0)}
+for(let r=0;r<3;r++)for(let i=r;i<10;i+=3){const v=9+(i%4)*4,x=((t*v+i*61)%(W+50))-25,y=Math.round(H*.88+r*5);ds(pspr(i,SKI(i)),x,y,CH[i].z||20,1,t*8+i,0)}
 for(let k=0;k<44;k++){const x=(h2(k,3)%W)+Math.sin(t*.8+k)*5,y=H-((t*(5+k%5*3)+h2(k,5)%H)%H);g.fillStyle=k%3?'rgba(127,224,240,.8)':'rgba(255,216,74,.8)';g.fillRect(x|0,y|0,1,1);if(k%7==0)g.fillRect(x|0,(y|0)-1,1,3)}}
 
 /* ---- 結算 / 開始 ---- */
@@ -624,7 +615,7 @@ for(const f of s.fx){const x=Math.round(f.x-cx),y=Math.round(f.y-cy);if(f.k==3){
 if(s.au>0){g.strokeStyle='rgba(180,90,220,.55)';g.lineWidth=1;g.beginPath();g.arc(px,py,Math.min(s.au,vrad()),0,6.283);g.stroke()}
 if(s.nw>0){g.strokeStyle='rgba(240,200,120,.85)';g.lineWidth=2;g.beginPath();g.arc(px,py,Math.min(s.nr,vrad())*(1-s.nw/.25),0,6.283);g.stroke();g.lineWidth=1}
 g.fillStyle='rgba(91,208,232,.5)';g.fillRect(px-7,py+7,14,2);
-if(p.inv<=0||p.inv>.6||(p.inv*20|0)%2||p.inv>.45)ds(pspr(cur,SK()),p.x-cx,p.y-cy,CH[cur].z||20,p.fl,p.mv?p.ph:0,p.inv>.45&&p.inv<=.6);
+if(p.inv<=0||p.inv>.6||(p.inv*20|0)%2||p.inv>.45)ds(pspr(cur,SKI(cur)),p.x-cx,p.y-cy,CH[cur].z||20,p.fl,p.mv?p.ph:0,p.inv>.45&&p.inv<=.6);
 if(p.inv>.6){g.strokeStyle='#7fe0f0';g.beginPath();g.arc(px,py,13,0,6.283);g.stroke()}
 for(const f of s.fp||[]){const x=Math.round(f.x-cx),y=Math.round(f.y-cy);g.fillStyle=FC.f;g.fillRect(x-3,y-3,6,6);g.fillStyle=FC.f2;g.fillRect(x-1,y-1,3,3);g.fillStyle=FC.e;g.fillRect(x-1,y-5,2,2)}
 for(const b of s.bl){const x=Math.round(b.x-cx),y=Math.round(b.y-cy),F=FXS[FXK()].rb?fxc(FXK(),s.t+b.x*.02):FC;g.globalAlpha=.35;g.fillStyle=F.a;g.fillRect(Math.round(x-b.vx*.03)-1,Math.round(y-b.vy*.03)-1,3,3);g.fillRect(Math.round(x-b.vx*.06),Math.round(y-b.vy*.06),2,2);g.globalAlpha=1;g.fillStyle=F.a;g.fillRect(x-2,y-2,4,4);g.fillStyle=F.b;g.fillRect(x-1,y-1,2,2)}
